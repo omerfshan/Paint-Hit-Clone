@@ -19,21 +19,22 @@ public class Circle1 : MonoBehaviour {
         }));
     }
 	
-    void RotateCirlce()
+   void RotateCircle()
+{
+    iTween.RotateBy(base.gameObject, iTween.Hash(new object[]
     {
-        iTween.RotateBy(base.gameObject, iTween.Hash(new object[]
-        {
-            "y",
-            0.8f,
-            "time",
-            Ball.rotatinTime,
-            "easeType",
-            iTween.EaseType.easeInOutQuad,
-            "loopType",
-            iTween.LoopType.pingPong,
-            "delay",
-            0.4
-        }));
-    }
+        "y",
+        0.8f,
+        "time",
+        Ball.rotatinTime,
+        "easeType",
+        iTween.EaseType.easeInOutQuad,
+        "loopType",
+        iTween.LoopType.pingPong,
+        "delay",
+        0.4
+    }));
+}
+
     
 }
