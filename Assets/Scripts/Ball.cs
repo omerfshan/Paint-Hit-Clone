@@ -9,9 +9,14 @@ public class Ball : MonoBehaviour
     public GameObject ball;
     public static Color color=Color.gray;
     public float speed;
-    public int ballCount;
+    private int ballCount;
+    private int circleNo;
   
 private void Start() {
+    GameObject gameObject2=Instantiate(Resources.Load("Round"+Random.Range(1,4)))as GameObject;
+    gameObject2.transform.position=new Vector3(0,20,23);
+    gameObject2.name="circle"+circleNo;
+    
     ballCount=3;
 }
     // Update is called once per frame
@@ -39,10 +44,35 @@ public void HitBall()
 public void NewCircle()
 {
     GameObject[] array=GameObject.FindGameObjectsWithTag("circle");
-    GameObject circle=GameObject.Find("circle"+ci);
+    GameObject circle=GameObject.Find("circle"+circleNo);
+    for(int i=0; i<24; i++)
+    {
+      circle.transform.GetChild(i).gameObject.SetActive(false);
+    }
+  circle.transform.GetChild(24).gameObject.GetComponent<MeshRenderer>().material.color=Ball.color;
+    if(circle.GetComponent<iTween>())
+    {
+      circle.GetComponent<iTween>().enabled=false;
+
+    }
+    foreach (GameObject item in array)
+    {
+        iTween.MoveBy(item,iTween.Hash(new object[]
+        {
+            "y",
+            -2.90f,
+            "easetype",
+             iTween.EaseType.spring,
+             "time",
+             0.5
+        }
+        ));
+    }
+    circleNo++;
+
 GameObject gameObject2=Instantiate(Resources.Load("Round"+Random.Range(1,4)))as GameObject;
 gameObject2.transform.position=new Vector3(0,20,23);
-gameObject2.name="circle";
+gameObject2.name="circle"+circleNo;
 }
 
 
