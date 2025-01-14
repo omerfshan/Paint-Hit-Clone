@@ -6,6 +6,7 @@ public class Ball : MonoBehaviour
 {
 
     public static float rotatinspeed=100;
+     public static float rotatinTime=100;
     public GameObject ball;
     public static Color color=Color.gray;
     public float speed;

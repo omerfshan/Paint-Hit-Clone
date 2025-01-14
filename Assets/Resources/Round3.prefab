@@ -2042,7 +2042,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4682476134501212185}
-  - component: {fileID: -5464894553399733091}
   m_Layer: 0
   m_Name: Round3
   m_TagString: circle
@@ -2090,18 +2089,6 @@ Transform:
   - {fileID: 3461225178171707249}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &-5464894553399733091
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4682476134501212182}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2738ffdaa775b4d6393d78df4d16eaaf, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &4736733179921840123
 GameObject:
   m_ObjectHideFlags: 0
