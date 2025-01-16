@@ -1,82 +1,139 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Ball : MonoBehaviour
 {
-
-    public static float rotatinspeed=100;
-    public static float rotatinTime=100;
+    public static float rotatinspeed = 100;
+    public static float rotatinTime = 100;
     public GameObject ball;
-    public static Color color=Color.gray;
+    public GameObject dummyBall;
+    public static Color color = Color.gray;
     public float speed;
     private int ballCount;
     private int circleNo;
- 
+    private int HeartNo;
+    public Image[] balls;
+    public GameObject[] Hearts;
+
+    public static int currentCircleNo;
     Color[] ChangingColors;
-    public  SpriteRenderer spr;
+    public SpriteRenderer spr;
     public Material splashMat;
 
-    private void Start(){
-    
-    ResetGame();
-   
-    }
-    void ResetGame()
-    {   ChangingColors=ColorScript.colorArray;
-         color=ChangingColors[0];
-        if(ChangingColors==null||ChangingColors.Length==0)
-        {
-           Debug.LogError("ChangingColor Array empty or null");
-           return;
-        }
-        color=ChangingColors[0];
-        GameObject gameObject2=Instantiate(Resources.Load("Round"+Random.Range(1,4)))as GameObject;
-        if(gameObject2==null)
-        {
-         Debug.LogError("Failed to load Round prefabs");
-         return;
-        }
-        gameObject2.transform.position=new Vector3(0,20,23);
-        gameObject2.name="circle"+circleNo;
-
-        ballCount=LevelsManager.ballsCount;
-        Debug.Log("Ball GameReset: Initial BallCount="+ballCount);
-
-  
-}
-   
-    void Update()
+    private void Start()
     {
-        if(Input.GetMouseButtonDown(0)|| Input.GetKeyDown(KeyCode.Space))
+        if (balls == null || balls.Length == 0)
         {
-            HitBall();
+            Debug.LogError("Balls array is not set or empty. Please assign balls in the inspector.");
+            return;
+        }
+
+        ballCount = LevelsManager.ballsCount; // Top sayısını doğru şekilde al
+        if (ballCount <= 0)
+        {
+            Debug.LogWarning("Ball count is zero or negative. Setting default value (1).");
+            ballCount = 1;
+        }
+
+        Debug.Log($"Initial Ball Count: {ballCount}");
+        ResetGame();
+    }
+
+    void ResetGame()
+    {
+        ChangingColors = ColorScript.colorArray;
+
+       
+
+        color = ChangingColors[0];
+        ChangeBallsCount();
+
+        GameObject gameObject2 = Instantiate(Resources.Load("Round" + Random.Range(1, 4))) as GameObject;
+
+        
+
+        gameObject2.transform.position = new Vector3(0, 20, 23);
+        gameObject2.name = "circle" + circleNo;
+
+        Debug.Log($"Ball GameReset: Initial BallCount = {ballCount}");
+
+        HeartNo = PlayerPrefs.GetInt("Hearts", 1);
+        if (HeartNo == 0)
+        {
+            PlayerPrefs.SetInt("Hearts", 1);
+        }
+
+        HeartNo = PlayerPrefs.GetInt("Hearts");
+        for (int i = 0; i < Hearts.Length; i++)
+        {
+            Hearts[i].SetActive(i < HeartNo);
+        }
+
+        MakeHurldes();
+    }
+
+    public void HeartsLow()
+    {
+        if (HeartNo > 0)
+        {
+            HeartNo--;
+            PlayerPrefs.SetInt("Hearts", HeartNo);
+            Hearts[HeartNo].SetActive(false);
         }
        
     }
 
     public void HitBall()
     {
-        if(ballCount<=1)
+        if (ballCount <= 1)
         {
-         Debug.Log("Ball Count Reached zero. Creatingg new Circle");
-         base.Invoke("NewCircle",0.4f);
+            Debug.Log("Ball Count Reached zero. Creating new Circle.");
+            base.Invoke("NewCircle", 0.4f);
         }
-        ballCount--;
-        Debug.Log("Ball Count After Hit"+ballCount);
-        GameObject gameObject=Instantiate<GameObject>(ball,new Vector3(0,0,-8),Quaternion.identity);
-        if(gameObject==null)
-        {
-          Debug.LogError("obje oluşturulamadı");
-        }
-        gameObject.GetComponent<MeshRenderer>().material.color=color;
-        gameObject.GetComponent<Rigidbody>().AddForce(Vector3.forward*speed,ForceMode.Impulse);
 
+        if (ballCount > 0)
+        {
+            ballCount--;
+            balls[ballCount].enabled = false;
+        }
+        else
+        {
+            Debug.LogWarning("No balls left to disable.");
+        }
+
+        ChangeBallsCount();
+        Debug.Log($"Ball Count After Hit: {ballCount}");
+
+        GameObject newBall = Instantiate(ball, new Vector3(0, 0, -8), Quaternion.identity);
+       
+
+        newBall.GetComponent<MeshRenderer>().material.color = color;
+        newBall.GetComponent<Rigidbody>().AddForce(Vector3.forward * speed, ForceMode.Impulse);
+    }
+
+    void ChangeBallsCount()
+    {
+        Debug.Log($"Changing Balls: Active Ball Count = {ballCount}");
+
+        for (int i = 0; i < balls.Length; i++)
+        {
+            balls[i].enabled = false;
+        }
+
+        int activeBalls = Mathf.Clamp(ballCount, 0, balls.Length);
+
+        for (int j = 0; j < activeBalls; j++)
+        {
+            balls[j].enabled = true;
+            balls[j].color = color;
+        }
     }
 
     public void NewCircle()
-    {   
-        Debug.Log("NewCircle called. Current circleNo: " + circleNo);
+    {
+       
 
         GameObject[] array = GameObject.FindGameObjectsWithTag("circle");
         GameObject circle = GameObject.Find("circle" + circleNo);
@@ -85,7 +142,7 @@ public class Ball : MonoBehaviour
         {
             for (int i = 0; i < 24; i++)
             {
-             if (circle.transform.childCount > i)
+                if (circle.transform.childCount > i)
                 {
                     circle.transform.GetChild(i).gameObject.SetActive(false);
                 }
@@ -98,13 +155,10 @@ public class Ball : MonoBehaviour
 
             if (circle.GetComponent<iTween>())
             {
-            circle.GetComponent<iTween>().enabled = false;
+                circle.GetComponent<iTween>().enabled = false;
             }
         }
-        else
-        {
-            Debug.LogWarning("Circle not found: circle" + circleNo);
-        }
+       
 
         foreach (GameObject item in array)
         {
@@ -115,16 +169,17 @@ public class Ball : MonoBehaviour
                     "easetype", iTween.EaseType.spring,
                     "time", 0.5
                 ));
-             }
+            }
         }
 
         circleNo++;
+        currentCircleNo = circleNo;
 
-        GameObject gameObject2 = Instantiate(Resources.Load("Round" + Random.Range(1, 4))) as GameObject;
-        if (gameObject2 != null)
+        GameObject newCircle = Instantiate(Resources.Load("Round" + Random.Range(1, 4))) as GameObject;
+        if (newCircle != null)
         {
-            gameObject2.transform.position = new Vector3(0, 20, 23);
-            gameObject2.name = "circle" + circleNo;
+            newCircle.transform.position = new Vector3(0, 20, 23);
+            newCircle.name = "circle" + circleNo;
             ballCount = LevelsManager.ballsCount;
 
             if (circleNo < ChangingColors.Length)
@@ -134,18 +189,27 @@ public class Ball : MonoBehaviour
             else
             {
                 Debug.LogWarning("circleNo out of bounds for ChangingColors. Using default color.");
-                color=ChangingColors[0];
+                color = ChangingColors[0];
             }
 
+            LevelsManager.currentColor = color;
             spr.color = color;
             splashMat.color = color;
+            MakeHurldes();
+            ChangeBallsCount();
+        }
+        else
+        {
+            Debug.LogError("Failed to load new circle prefab.");
+        }
     }
-    else
+
+    void MakeHurldes()
     {
-        Debug.LogError("Failed to load new circle prefab.");
+        if (circleNo == 1) FindAnyObjectByType<LevelsManager>().MakeHurldes1();
+        if (circleNo == 2) FindAnyObjectByType<LevelsManager>().MakeHurldes2();
+        if (circleNo == 3) FindAnyObjectByType<LevelsManager>().MakeHurldes3();
+        if (circleNo == 4) FindAnyObjectByType<LevelsManager>().MakeHurldes4();
+        if (circleNo == 5) FindAnyObjectByType<LevelsManager>().MakeHurldes5();
     }
-}
-
-
-
 }
