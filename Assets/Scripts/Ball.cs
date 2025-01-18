@@ -30,7 +30,7 @@ public class Ball : MonoBehaviour
             return;
         }
 
-        ballCount = LevelsManager.ballsCount; // Top sayısını doğru şekilde al
+        ballCount = LevelsManager.ballsCount; // Top sayısını al
         if (ballCount <= 0)
         {
             Debug.LogWarning("Ball count is zero or negative. Setting default value (1).");
@@ -45,14 +45,10 @@ public class Ball : MonoBehaviour
     {
         ChangingColors = ColorScript.colorArray;
 
-       
-
         color = ChangingColors[0];
         ChangeBallsCount();
 
         GameObject gameObject2 = Instantiate(Resources.Load("Round" + Random.Range(1, 4))) as GameObject;
-
-        
 
         gameObject2.transform.position = new Vector3(0, 20, 23);
         gameObject2.name = "circle" + circleNo;
@@ -66,9 +62,9 @@ public class Ball : MonoBehaviour
         }
 
         HeartNo = PlayerPrefs.GetInt("Hearts");
-        for (int i = 0; i < Hearts.Length; i++)
+        for (int i = 0; i < HeartNo; i++)
         {
-            Hearts[i].SetActive(i < HeartNo);
+            Hearts[i].SetActive(true);
         }
 
         MakeHurldes();
@@ -76,13 +72,9 @@ public class Ball : MonoBehaviour
 
     public void HeartsLow()
     {
-        if (HeartNo > 0)
-        {
-            HeartNo--;
-            PlayerPrefs.SetInt("Hearts", HeartNo);
-            Hearts[HeartNo].SetActive(false);
-        }
-       
+        HeartNo--;
+        PlayerPrefs.SetInt("Hearts", HeartNo);
+        Hearts[HeartNo].SetActive(false);
     }
 
     public void HitBall()
@@ -90,13 +82,19 @@ public class Ball : MonoBehaviour
         if (ballCount <= 1)
         {
             Debug.Log("Ball Count Reached zero. Creating new Circle.");
-            base.Invoke("NewCircle", 0.4f);
+            Invoke("NewCircle", 0.4f);
         }
 
-        if (ballCount > 0)
+        ballCount--;
+
+        if (ballCount >= 0)
         {
-            ballCount--;
             balls[ballCount].enabled = false;
+
+            // Alpha değerini şeffaf yap
+            Color tempColor = balls[ballCount].color;
+            tempColor.a = 0f; // Şeffaf
+            balls[ballCount].color = tempColor;
         }
         else
         {
@@ -107,8 +105,6 @@ public class Ball : MonoBehaviour
         Debug.Log($"Ball Count After Hit: {ballCount}");
 
         GameObject newBall = Instantiate(ball, new Vector3(0, 0, -8), Quaternion.identity);
-       
-
         newBall.GetComponent<MeshRenderer>().material.color = color;
         newBall.GetComponent<Rigidbody>().AddForce(Vector3.forward * speed, ForceMode.Impulse);
     }
@@ -119,22 +115,30 @@ public class Ball : MonoBehaviour
 
         for (int i = 0; i < balls.Length; i++)
         {
-            balls[i].enabled = false;
-        }
+            if (i < ballCount)
+            {
+                balls[i].enabled = true;
 
-        int activeBalls = Mathf.Clamp(ballCount, 0, balls.Length);
+                // Alpha değerini opak yap
+                Color tempColor =color;
+                tempColor.a = 1f; // Opak
 
-        for (int j = 0; j < activeBalls; j++)
-        {
-            balls[j].enabled = true;
-            balls[j].color = color;
+                balls[i].color = tempColor;
+            }
+            else
+            {
+                balls[i].enabled = false;
+
+                // Alpha değerini şeffaf yap
+                Color tempColor = color;
+                tempColor.a = 0f; // Şeffaf
+                balls[i].color = tempColor;
+            }
         }
     }
 
     public void NewCircle()
     {
-       
-
         GameObject[] array = GameObject.FindGameObjectsWithTag("circle");
         GameObject circle = GameObject.Find("circle" + circleNo);
 
@@ -158,7 +162,6 @@ public class Ball : MonoBehaviour
                 circle.GetComponent<iTween>().enabled = false;
             }
         }
-       
 
         foreach (GameObject item in array)
         {
